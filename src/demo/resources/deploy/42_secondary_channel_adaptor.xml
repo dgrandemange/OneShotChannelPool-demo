@@ -1,0 +1,20 @@
+<channel-adaptor name="secondary-channel"
+	class="org.jpos.q2.iso.EnhancedOneShotChannelAdaptor" logger="Q2">
+
+
+	<channel class="org.jpos.iso.channel.XMLChannel" logger="Q2"
+		packager="org.jpos.iso.packager.XMLPackager">
+		<property name="host" value="127.0.0.1" />
+		<property name="port" value="23456" />
+	</channel>
+
+	<max-connections>5</max-connections>
+
+	<in>secondary-channel-send</in>
+	<out>secondary-channel-receive</out>
+
+	<!-- &lt;cnx-process-handling&gt; must be set to "true" so that connection 
+		failures get reported to channel pool -->
+	<cnx-process-handling>true</cnx-process-handling>
+
+</channel-adaptor> 

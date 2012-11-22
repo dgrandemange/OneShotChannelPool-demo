@@ -1,0 +1,16 @@
+<server class="org.jpos.q2.iso.QServer" logger="Q2" name="mockServerNo1">
+
+	<attr name="port" type="java.lang.Integer">12345</attr>
+	
+	<attr name="minSessions" type="java.lang.Integer">5</attr>
+	<attr name="maxSessions" type="java.lang.Integer">10</attr>
+	
+	<channel class="org.jpos.iso.channel.XMLChannel" logger="Q2"
+		packager="org.jpos.iso.packager.XMLPackager">
+	</channel>
+
+	<request-listener class="org.jpos.bsh.BSHRequestListener" logger="Q2">
+		<property name="source" value="cfg/simulator.bsh" />
+	</request-listener>
+	
+</server>

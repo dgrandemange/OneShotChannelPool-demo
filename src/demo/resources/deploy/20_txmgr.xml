@@ -1,0 +1,12 @@
+<txnmgr name="myTxMgr" logger="Q2" class="org.jpos.transaction.TransactionManager">
+
+	<property name="space" value="tspace:default" />
+	<property name="queue" value="myTxQueue" />
+	<property name="persistent-space" value="tspace:myTxnSpace" />
+	<property name="sessions" value="1" />
+
+	<participant class="org.jpos.jposext.oneshotchannelpooldemo.transaction.DemoParticipant">
+		<property name="mux-ref" value="channel-pool.some-channel-pool" />
+	</participant>
+	
+</txnmgr>
