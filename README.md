@@ -9,6 +9,7 @@ First :
 > mvn -Pdemo install
 
 Then, under runtime directory :
+> mkdir log
 > java -jar q2.jar
 
 The 'src/demo/java/org/jpos/jposext/oneshotchannelpooldemo/transaction/DemoParticipant.java' try to send a dummy message every 5 seconds to the channel pool.
