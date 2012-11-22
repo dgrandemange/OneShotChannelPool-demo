@@ -21,12 +21,12 @@ import org.jpos.util.LogSource;
 import org.jpos.util.NameRegistrar;
 
 /**
- * Inspired from jpos original org.jpos.q2.iso.OneShotChannelAdaptor<BR>
+ * Inspired from jpos original {@link org.jpos.q2.iso.OneShotChannelAdaptor}<BR>
  * 
- * New optinal configuration element &lt;cnx-process-handling&gt;
- * (default=false) indicates if connection process should be handled so that when a
+ * New optinal configuration element {@code <cnx-process-handling>}
+ * (default is {@code false}) indicates if connection process should be handled so that when a
  * connection attempt fails, a connection failure exception is thrown to the
- * send() caller<BR>
+ *  {@code send(...)} caller<BR>
  * 
  * @author dgrandemange
  * 

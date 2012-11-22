@@ -12,18 +12,35 @@ import org.jpos.iso.ISOUtil;
 import org.jpos.iso.MUX;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.util.NameRegistrar;
+import org.jpos.util.NameRegistrar.NotFoundException;
 
 /**
- * A channel pool inspired from org.jpos.q2.iso.MUXPool<BR>
+ * A pool of Channel<BR>
+ * Like org.jpos.q2.iso.MUXPool, it provides a load distribution strategy
+ * {@code round-robin} and a failover strategy {@code primary-secondary}<BR>
+ * Although it's a pool of Channels (not MUXes), it still exposes the MUX
+ * interface for convenience purposes.<BR>
+ * Channels registration is checked at runtime (i.e. request time, not at
+ * service start).<BR>
+ * <BR>
+ * <U>Typical configuration sample</U><BR>
+ * &lt;channel-pool class="org.jpos.q2.iso.OneShotChannelPool" logger="Q2"
+ * name="some-channel-pool"&gt;<BR>
+ * &nbsp;&nbsp;&lt;channels&gt;primary-channel
+ * secondary-channel&lt;/channels&gt;<BR>
+ * &nbsp;&nbsp;&lt;strategy&gt;primary-secondary&lt;/strategy&gt;<BR>
+ * &nbsp;&nbsp;&lt;!-- &lt;strategy&gt;round-robin&lt;/strategy&gt; --&gt;<BR>
+ * &lt;/channel-pool&gt;<BR>
  * 
  * @author dgrandemange
  * 
  */
 public class OneShotChannelPool extends QBeanSupport implements MUX {
 
+	private static final String DISTRIBUTION_STRATEGY__ROUND_ROBIN = "round-robin";
+
 	int strategy = 0;
 	String[] channelsName;
-	Channel[] channels;
 	int msgno = 0;
 	public static final int ROUND_ROBIN = 1;
 	public static final int PRIMARY_SECONDARY = 0;
@@ -33,25 +50,14 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 
 		channelsName = toStringArray(e.getChildTextTrim("channels"));
 		String s = e.getChildTextTrim("strategy");
-		strategy = "round-robin".equals(s) ? ROUND_ROBIN : PRIMARY_SECONDARY;
+		strategy = DISTRIBUTION_STRATEGY__ROUND_ROBIN.equals(s) ? ROUND_ROBIN
+				: PRIMARY_SECONDARY;
 
-		channels = new Channel[channelsName.length];
-		try {
-			for (int i = 0; i < channels.length; i++)
-				channels[i] = getChannelFromName(channelsName[i]);
-		} catch (NameRegistrar.NotFoundException ex) {
-			throw new ConfigurationException(ex);
-		}
 		NameRegistrar.register("channel-pool." + getName(), this);
 	}
 
 	public void stopService() {
 		NameRegistrar.unregister("channel-pool." + getName());
-	}
-
-	private Channel getChannelFromName(String name)
-			throws NameRegistrar.NotFoundException {
-		return (Channel) NameRegistrar.get(name);
 	}
 
 	private String[] toStringArray(String s) {
@@ -78,18 +84,29 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 		}
 
 		Channel selectedChannel = null;
-		for (int i = 0; (i < channels.length) && (selectedChannel == null)
+		for (int i = 0; (i < channelsName.length) && (selectedChannel == null)
 				&& ((System.currentTimeMillis() < maxWait)); i++) {
-			if (PRIMARY_SECONDARY == strategy) {
-				selectedChannel = sendAttempt(m, channels[i]);
-			} else {
-				int j = (mnumber + i) % channels.length;
 
-				selectedChannel = sendAttempt(m, channels[j]);
+			int channelIdx;
+			if (PRIMARY_SECONDARY == strategy) {
+				channelIdx = i;
+			} else {
+				int j = (mnumber + i) % channelsName.length;
+				channelIdx = j;
 			}
-			 
+
+			try {
+				selectedChannel = findChannelByName(channelsName[channelIdx],
+						Channel.class);
+				selectedChannel.send(m);
+			} catch (NotFoundException e) {
+				selectedChannel = null;
+			} catch (ConnectionFailureException e) {
+				selectedChannel = null;
+			}
+
 			if (null == selectedChannel) {
-				// TODO Is sleeping really necessary ?
+				// TODO Is this delay useful really ?
 				ISOUtil.sleep(1000L);
 			}
 		}
@@ -105,19 +122,19 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 		return null;
 	}
 
-	private Channel sendAttempt(ISOMsg m, Channel channel) {
-		try {
-			channel.send(m);
-			return channel;
+	@SuppressWarnings("unchecked")
+	protected <T extends Channel> T findChannelByName(String name,
+			Class<T> clazz) throws NotFoundException {
+		T res = null;
+
+		Object object = NameRegistrar.get(name);
+		if (clazz.isAssignableFrom(object.getClass())) {
+			res = (T) object;
+		} else {
+			throw new NotFoundException(name);
 		}
 
-		catch (ConnectionFailureException e) {
-			@SuppressWarnings("unused")
-			Throwable cause = e.getCause();
-			// TODO do something with cause ? Check if IOException instance, ... ?
-		}
-
-		return null;
+		return res;
 	}
 
 	/*
@@ -138,8 +155,22 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 	 * @see org.jpos.iso.MUX#isConnected()
 	 */
 	public boolean isConnected() {
-		// True by default
-		return true;
+		// We consider pool is connected if one channel at least is well
+		// deployed and registered
+
+		boolean res = false;
+
+		for (int i = 0; (i < channelsName.length); i++) {
+			try {
+				findChannelByName(channelsName[i], Channel.class);
+				res = true;
+				break;
+			} catch (NotFoundException e) {
+				// Safe to ignore
+			}
+		}
+
+		return res;
 	}
 
 }
