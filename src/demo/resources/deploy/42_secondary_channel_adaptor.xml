@@ -6,6 +6,7 @@
 		packager="org.jpos.iso.packager.XMLPackager">
 		<property name="host" value="127.0.0.1" />
 		<property name="port" value="23456" />
+		<property name="connect-timeout" value="500" />
 	</channel>
 
 	<max-connections>5</max-connections>
