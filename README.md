@@ -1,7 +1,8 @@
 OneShotChannelPool-demo
 =======================
 
-Demo project of a one shot channel selector (src/main/java/org/jpos/q2/iso/OneShotChannelPool.java) component for jPos. This component requires a dedicated implementation of jPos one shot channel adaptor current implementation (src/main/java/org/jpos/q2/iso/EnhancedOneShotChannelAdaptor.java).
+Demo project of a one shot channel selector (src/main/java/org/jpos/q2/iso/OneShotChannelPool.java) component for jPos. 
+This component requires a dedicated implementation of jPos one shot channel adaptor (src/main/java/org/jpos/q2/iso/EnhancedOneShotChannelAdaptor.java).
 
 Running the demo :
 ------------------
@@ -33,4 +34,4 @@ You may play with the server configurations "deploy/10_mock_server_no1.xml" and 
 - change servers ports,
 - undeploy servers configs
 
-You can also make "mux-ref" points to a conventional qmux (like "deploy/45_primary_mux.xml" or "deploy/45_secondary_mux.xml"). Doing so, there is no more failover policy at all. 
+You can also make "mux-ref" points to a conventional qmux (like "deploy/45_primary_mux.xml" or "deploy/45_secondary_mux.xml"). 
