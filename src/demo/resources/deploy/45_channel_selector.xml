@@ -1,4 +1,4 @@
-<channel-pool class="org.jpos.q2.iso.OneShotChannelPool" logger="Q2" name="some-channel-pool">
+<channel-pool class="org.jpos.q2.iso.OneShotChannelPool" logger="Q2" name="a-channel-selector">
 	<channels>primary-channel secondary-channel</channels>
 	<strategy>primary-secondary</strategy>
 

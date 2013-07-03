@@ -1,4 +1,5 @@
-package org.jpos.q2.iso;
+package org.jpos.q2.iso.exception;
+
 
 /**
  * @author dgrandemange

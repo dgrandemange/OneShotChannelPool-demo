@@ -3,14 +3,6 @@ package org.jpos.q2.iso;
 public interface EnhancedOneShotChannelAdaptorMBean extends
 		org.jpos.q2.QBeanSupportMBean {
 
-	void setInQueue(java.lang.String in);
-
-	java.lang.String getInQueue();
-
-	void setOutQueue(java.lang.String out);
-
-	java.lang.String getOutQueue();
-
 	void setHost(java.lang.String host);
 
 	java.lang.String getHost();
@@ -23,4 +15,19 @@ public interface EnhancedOneShotChannelAdaptorMBean extends
 
 	java.lang.String getSocketFactory();
 
+	int getCnxSuccessCounter();
+	
+	int getCnxFailedCounter();
+	
+	void resetCounters();
+
+	int getChannelPoolMaxActive();
+	
+	int getChannelPoolMaxIdle();
+	
+	int getChannelPoolMinIdle();
+	
+	int getChannelPoolNumActive();
+	
+	int getChannelPoolNumIdle();
 }

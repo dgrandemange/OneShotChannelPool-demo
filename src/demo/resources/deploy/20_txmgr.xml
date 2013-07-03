@@ -6,7 +6,14 @@
 	<property name="sessions" value="1" />
 
 	<participant class="org.jpos.jposext.oneshotchannelpooldemo.transaction.DemoParticipant">
-		<property name="mux-ref" value="channel-pool.some-channel-pool" />
+		<!-- 
+			We can here choose between : 
+			* a channel selector providing failover policy
+			* a simple QMUX
+		-->
+		<property name="mux-ref" value="channel-pool.a-channel-selector" />		
+<!-- 		<property name="mux-ref" value="mux.primary-mux" /> -->
+<!-- 		<property name="mux-ref" value="mux.secondary-mux" /> -->
 	</participant>
 	
 </txnmgr>

@@ -8,9 +8,9 @@ import org.jpos.iso.Channel;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOResponseListener;
-import org.jpos.iso.ISOUtil;
 import org.jpos.iso.MUX;
 import org.jpos.q2.QBeanSupport;
+import org.jpos.q2.iso.exception.ConnectionFailureException;
 import org.jpos.util.NameRegistrar;
 import org.jpos.util.NameRegistrar.NotFoundException;
 
@@ -54,6 +54,7 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 				: PRIMARY_SECONDARY;
 
 		NameRegistrar.register("channel-pool." + getName(), this);
+		// FIXME put registration in startService() ?
 	}
 
 	public void stopService() {
@@ -77,6 +78,7 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 	 * @see org.jpos.iso.MUX#request(org.jpos.iso.ISOMsg, long)
 	 */
 	public ISOMsg request(ISOMsg m, long timeout) throws ISOException {
+		ISOMsg response = null;
 		int mnumber = 0;
 		long maxWait = System.currentTimeMillis() + timeout;
 		synchronized (this) {
@@ -98,28 +100,23 @@ public class OneShotChannelPool extends QBeanSupport implements MUX {
 			try {
 				selectedChannel = findChannelByName(channelsName[channelIdx],
 						Channel.class);
+
 				selectedChannel.send(m);
+
+				Thread.yield();
+
+				response = selectedChannel.receive(timeout);
 			} catch (NotFoundException e) {
+				getLog().warn(
+						String.format("%s : %s", this.getName(), e.getMessage()));
+
 				selectedChannel = null;
 			} catch (ConnectionFailureException e) {
 				selectedChannel = null;
 			}
-
-			if (null == selectedChannel) {
-				// TODO Is this delay useful really ?
-				ISOUtil.sleep(1000L);
-			}
 		}
 
-		if (selectedChannel != null) {
-			timeout = maxWait - System.currentTimeMillis();
-			if (timeout >= 0) {
-				ISOMsg received = selectedChannel.receive(timeout);
-				return received;
-			}
-		}
-
-		return null;
+		return response;
 	}
 
 	@SuppressWarnings("unchecked")

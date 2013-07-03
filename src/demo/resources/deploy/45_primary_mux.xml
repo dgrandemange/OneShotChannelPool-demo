@@ -1,0 +1,12 @@
+<mux name="primary-mux" logger="Q2" class="org.jpos.q2.iso.QMUX" >
+
+	<in>primary-channel-receive</in>
+	<out>primary-channel-send</out>
+	
+	<unhandled>primary-mux.unhandled</unhandled>
+	
+	<ready>primary-mux.ready</ready>
+	
+	<key>2, 3, 11</key>
+		
+</mux>
